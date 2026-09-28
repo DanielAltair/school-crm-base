@@ -1,66 +1,67 @@
-
-import type { Usuario } from '../interfaces';
-
-const USUARIOS_INICIALES: Usuario[] = [
-    { id: 1, nombre: 'Ana Martinez', rol: 'alumno', activo: true, tieneCoche: 'Toyota' },
-    { id: 2, nombre: 'Daniel Izquierdo', rol: 'alumno', activo: true },
-    { id: 3, nombre: 'Carlos Regina', rol: 'admin', activo: false },
-    { id: 4, nombre: 'Paco Gonzalez', rol: 'profesor', activo: true }
-];
+import type { Usuario, Rol } from "../models/interfaces.ts";
 
 export class CRMController {
-    private readonly claveStorage = 'school_crm_usuarios';
-    private listaUsuarios: Usuario[];
+  // Propiedades
+  private usuariosDelCentro: Usuario[] = [];
+  private version: string;
+  private readonly CLAVE_STORAGE = "school-crm-usuarios"; // Constante privada, no se puede cambiar desde fuera de la clase
 
-    constructor() {
-        this.listaUsuarios = this.leerDelDisco();
+  // Constructor se ejeuta al nacer el objeto
+  constructor(version: string) {
+    this.version = version;
+    // IInicializamo el array de usuarios si no existe en localStorage
+    const datosLocales = localStorage.getItem(this.CLAVE_STORAGE);
+    if (datosLocales) {
+      this.usuariosDelCentro = JSON.parse(datosLocales);
+    } else {
+      this.usuariosDelCentro = [
+        { id: 1, nombre: "Juan Pérez", rol: "admin", activo: true },
+        { id: 2, nombre: "María López", rol: "profesor", activo: true },
+        { id: 3, nombre: "Carlos García", rol: "alumno", activo: true },
+      ]; // Inicializamos el array vacío si no hay datos en localStorage
+    }
+  }
+
+  // Métodos: La función de ayer, que estaba en counter, convertida en un método o habilidad de la clase
+  filtrarUsuariosPorRol(rolBuscado: Rol): Usuario[] {
+    // Usamos this para referirnos a la propiedad de esta misma clase
+    return this.usuariosDelCentro.filter(
+      (usuario) => usuario.rol === rolBuscado,
+    );
+  }
+
+  actualizaVersion(nuevaVersion: string): void {
+    this.version = nuevaVersion;
+  }
+
+  verVersion(): string {
+    return this.version;
+  }
+  // 🚀 RESOLUCIÓN DEL RETO EXPRESS
+  public agregarUsuario(nuevoUsuario: Usuario): boolean {
+    // 1. Validamos si el ID ya existe en nuestro array privado
+    const idDuplicado = this.usuariosDelCentro.some(
+      (user) => user.id === nuevoUsuario.id,
+    );
+
+    if (idDuplicado) {
+      console.error(
+        `❌ Error: El usuario con ID [${nuevoUsuario.id}] ya existe en el SchoolCRM.`,
+      );
+      return false; // Cortamos la ejecución para no añadirlo
     }
 
-    public obtenerUsuarios(): Usuario[] {
-        return [...this.listaUsuarios];
-    }
+    // 2. Si no está duplicado, lo añadimos de forma segura
+    this.usuariosDelCentro.push(nuevoUsuario);
+    console.log(`✅ Usuario ${nuevoUsuario.nombre} añadido correctamente.`);
+    this.guardarEnDisco(); // Guardamos los cambios en localStorage
+    return true;
+  }
 
-    public obtenerUsuariosPorRol(rolBuscado: Usuario['rol']): Usuario[] {
-        return this.listaUsuarios.filter(usuario => usuario.rol === rolBuscado);
-    }
-
-    public agregarUsuario(nuevoUsuario: Usuario): void {
-        const idDuplicado = this.listaUsuarios.some(usuario => usuario.id === nuevoUsuario.id);
-
-        if (idDuplicado) {
-            console.error(`El ID ${nuevoUsuario.id} ya existe.`);
-            return;
-        }
-
-        this.listaUsuarios.push(nuevoUsuario);
-        this.guardarEnDisco();
-    }
-
-    private leerDelDisco(): Usuario[] {
-        const datosLocales = localStorage.getItem(this.claveStorage);
-
-        if (!datosLocales) {
-            this.listaUsuarios = [...USUARIOS_INICIALES];
-            this.guardarEnDisco();
-            return this.listaUsuarios;
-        }
-
-        try {
-            const usuariosGuardados = JSON.parse(datosLocales) as Usuario[];
-
-            if (Array.isArray(usuariosGuardados) && usuariosGuardados.length > 0) {
-                return usuariosGuardados;
-            }
-        } catch {
-            console.warn('Los usuarios guardados no son válidos. Se usarán los iniciales.');
-        }
-
-        this.listaUsuarios = [...USUARIOS_INICIALES];
-        this.guardarEnDisco();
-        return this.listaUsuarios;
-    }
-
-    private guardarEnDisco(): void {
-        localStorage.setItem(this.claveStorage, JSON.stringify(this.listaUsuarios));
-    }
+  private guardarEnDisco(): void {
+    localStorage.setItem(
+      this.CLAVE_STORAGE,
+      JSON.stringify(this.usuariosDelCentro),
+    );
+  }
 }

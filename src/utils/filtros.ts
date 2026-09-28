@@ -1,4 +1,4 @@
-import type { Usuario } from '../interfaces.ts';
+import type { Usuario } from '../models/interfaces.ts';
 
 // Exportamos la función pura de filtrado 
 export function obtenerUsuariosPorRol(lista: Usuario[], rolBuscado: 'profesor' | 'alumno'): Usuario[] { 
