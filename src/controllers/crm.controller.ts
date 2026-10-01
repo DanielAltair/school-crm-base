@@ -53,9 +53,13 @@ export class CRMController {
      * Devuelve true si hay conflicto (el profesor está duplicado) o false si está libre.
      */
     public async comprobarConflictoProfesor(profesorId: string, dia: DiaSemana, franja: FranjaHoraria): Promise<boolean> {
-        // TODO: Buscar coincidencias exactas de profesor, día y franja.
-        void [profesorId, dia, franja, this.horariosStorage];
-        throw new Error('Método no implementado');
+        await this.simularLatencia();
+
+        return this.horariosStorage.getAll().some((horario) =>
+            horario.profesorId === profesorId &&
+            horario.dia === dia &&
+            horario.franja === franja,
+        );
     }
 
     /**
