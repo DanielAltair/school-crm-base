@@ -34,9 +34,18 @@ export class CRMController {
      * Registra una sanción disciplinaria.
      */
     public async registrarSancion(alumnoId: string, profesorId: string, tipo: TipoSancion, descripcion: string): Promise<void> {
-        // TODO: Simular la latencia de red y guardar la sanción.
-        void [alumnoId, profesorId, tipo, descripcion, this.sancionesStorage];
-        throw new Error('Método no implementado');
+        await this.simularLatencia();
+
+        const sancion: Sancion = {
+            id: crypto.randomUUID(),
+            alumnoId,
+            profesorId,
+            fecha: new Date().toISOString().slice(0, 10),
+            tipo,
+            descripcion,
+        };
+
+        this.sancionesStorage.add(sancion);
     }
 
     /**
