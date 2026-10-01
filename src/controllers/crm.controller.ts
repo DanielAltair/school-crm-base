@@ -66,8 +66,15 @@ export class CRMController {
      * Genera un informe resumido con el total de faltas y retrasos de un alumno concreto.
      */
     public async obtenerInformeAlumno(alumnoId: string): Promise<{ faltas: number; retrasos: number; sanciones: number }> {
-        // TODO: Contar faltas, retrasos y sanciones del alumno.
-        void [alumnoId, this.asistenciaStorage, this.sancionesStorage];
-        throw new Error('Método no implementado');
+        await this.simularLatencia();
+
+        const asistencias = this.asistenciaStorage.getAll().filter((asistencia) => asistencia.alumnoId === alumnoId);
+        const sanciones = this.sancionesStorage.getAll().filter((sancion) => sancion.alumnoId === alumnoId);
+
+        return {
+            faltas: asistencias.filter((asistencia) => asistencia.estado === 'falta').length,
+            retrasos: asistencias.filter((asistencia) => asistencia.estado === 'retraso').length,
+            sanciones: sanciones.length,
+        };
     }
 }
