@@ -1,67 +1,60 @@
-import type { Usuario, Rol } from "../models/interfaces.ts";
+import type { Asistencia, Sancion, RegistroHorario, EstadoAsistencia, TipoSancion, DiaSemana, FranjaHoraria } from '../models/interfaces';
+import { StorageService } from '../services/storage.service';
 
 export class CRMController {
-  // Propiedades
-  private usuariosDelCentro: Usuario[] = [];
-  private version: string;
-  private readonly CLAVE_STORAGE = "school-crm-usuarios"; // Constante privada, no se puede cambiar desde fuera de la clase
+    // Inicialización de los almacenes persistentes
+    private readonly asistenciaStorage = new StorageService<Asistencia>('crm_asistencias');
+    private readonly sancionesStorage = new StorageService<Sancion>('crm_sanciones');
+    private readonly horariosStorage = new StorageService<RegistroHorario>('crm_horarios');
 
-  // Constructor se ejeuta al nacer el objeto
-  constructor(version: string) {
-    this.version = version;
-    // IInicializamo el array de usuarios si no existe en localStorage
-    const datosLocales = localStorage.getItem(this.CLAVE_STORAGE);
-    if (datosLocales) {
-      this.usuariosDelCentro = JSON.parse(datosLocales);
-    } else {
-      this.usuariosDelCentro = [
-        { id: 1, nombre: "Juan Pérez", rol: "admin", activo: true },
-        { id: 2, nombre: "María López", rol: "profesor", activo: true },
-        { id: 3, nombre: "Carlos García", rol: "alumno", activo: true },
-      ]; // Inicializamos el array vacío si no hay datos en localStorage
-    }
-  }
-
-  // Métodos: La función de ayer, que estaba en counter, convertida en un método o habilidad de la clase
-  filtrarUsuariosPorRol(rolBuscado: Rol): Usuario[] {
-    // Usamos this para referirnos a la propiedad de esta misma clase
-    return this.usuariosDelCentro.filter(
-      (usuario) => usuario.rol === rolBuscado,
-    );
-  }
-
-  actualizaVersion(nuevaVersion: string): void {
-    this.version = nuevaVersion;
-  }
-
-  verVersion(): string {
-    return this.version;
-  }
-  // 🚀 RESOLUCIÓN DEL RETO EXPRESS
-  public agregarUsuario(nuevoUsuario: Usuario): boolean {
-    // 1. Validamos si el ID ya existe en nuestro array privado
-    const idDuplicado = this.usuariosDelCentro.some(
-      (user) => user.id === nuevoUsuario.id,
-    );
-
-    if (idDuplicado) {
-      console.error(
-        `❌ Error: El usuario con ID [${nuevoUsuario.id}] ya existe en el SchoolCRM.`,
-      );
-      return false; // Cortamos la ejecución para no añadirlo
+    private simularLatencia(): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, 300));
     }
 
-    // 2. Si no está duplicado, lo añadimos de forma segura
-    this.usuariosDelCentro.push(nuevoUsuario);
-    console.log(`✅ Usuario ${nuevoUsuario.nombre} añadido correctamente.`);
-    this.guardarEnDisco(); // Guardamos los cambios en localStorage
-    return true;
-  }
+    /**
+     * Registra una falta, retraso o asistencia en el sistema de forma asíncrona.
+     */
+    public async registrarAsistencia(alumnoId: string, profesorId: string, franja: FranjaHoraria, estado: EstadoAsistencia): Promise<boolean> {
+        await this.simularLatencia();
 
-  private guardarEnDisco(): void {
-    localStorage.setItem(
-      this.CLAVE_STORAGE,
-      JSON.stringify(this.usuariosDelCentro),
-    );
-  }
+        const asistencia: Asistencia = {
+            id: crypto.randomUUID(),
+            alumnoId,
+            profesorId,
+            fecha: new Date().toISOString().slice(0, 10),
+            franja,
+            estado,
+        };
+
+        this.asistenciaStorage.add(asistencia);
+        return true;
+    }
+
+    /**
+     * Registra una sanción disciplinaria.
+     */
+    public async registrarSancion(alumnoId: string, profesorId: string, tipo: TipoSancion, descripcion: string): Promise<void> {
+        // TODO: Simular la latencia de red y guardar la sanción.
+        void [alumnoId, profesorId, tipo, descripcion, this.sancionesStorage];
+        throw new Error('Método no implementado');
+    }
+
+    /**
+     * VERIFICACIÓN CRÍTICA: Comprueba si un profesor ya tiene una clase asignada en el mismo día y hora.
+     * Devuelve true si hay conflicto (el profesor está duplicado) o false si está libre.
+     */
+    public async comprobarConflictoProfesor(profesorId: string, dia: DiaSemana, franja: FranjaHoraria): Promise<boolean> {
+        // TODO: Buscar coincidencias exactas de profesor, día y franja.
+        void [profesorId, dia, franja, this.horariosStorage];
+        throw new Error('Método no implementado');
+    }
+
+    /**
+     * Genera un informe resumido con el total de faltas y retrasos de un alumno concreto.
+     */
+    public async obtenerInformeAlumno(alumnoId: string): Promise<{ faltas: number; retrasos: number; sanciones: number }> {
+        // TODO: Contar faltas, retrasos y sanciones del alumno.
+        void [alumnoId, this.asistenciaStorage, this.sancionesStorage];
+        throw new Error('Método no implementado');
+    }
 }
